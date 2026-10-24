@@ -1,0 +1,760 @@
+{
+  "version": "1.0.0",
+  "fecha": "2026-10-22",
+  "descripcion": "Base de conocimiento inicial para el autodiagnóstico de ciberseguridad en PyMEs (pliego técnico Grupo Jota, v1.0). Reglas derivadas de CIS Controls v8 IG1, complementadas con NIST CSF 2.0 (Identify/Protect) e ISO/IEC 27001:2022 Anexo A.",
+  "fuentes": [
+    "CIS Controls v8, Implementation Group 1 (Center for Internet Security) — controles mínimos para organizaciones con recursos limitados.",
+    "NIST Cybersecurity Framework 2.0 (funciones Identify / Protect) — referencia complementaria para categorías de riesgo.",
+    "ISO/IEC 27001:2022 Anexo A — referencia de control de accesos y gestión de contraseñas.",
+    "Relevamiento interno del cliente (agosto 2026) y pliego técnico (criterios de aceptación RF-01 a RF-12)."
+  ],
+  "valores_desconocidos": ["no_se"],
+  "regla_general": {
+    "id": "GEN-01",
+    "rf": "RF-09",
+    "descripcion": "El nivel de riesgo general es el peor nivel entre las categorías críticas (requisitos Must). Si alguna categoría crítica está en Alto, el general es Alto aunque falten datos en otras; si no, y alguna categoría crítica no es determinable, el general tampoco lo es."
+  },
+  "categorias": {
+    "Endpoint": {
+      "critica": true,
+      "icono": "💻",
+      "descripcion": "Protección de los equipos: antivirus/EDR y actualizaciones de software (RF-01, RF-05)."
+    },
+    "Accesos": {
+      "critica": true,
+      "icono": "🔑",
+      "descripcion": "Contraseñas y autenticación en dos pasos (RF-02, RF-03)."
+    },
+    "Continuidad": {
+      "critica": true,
+      "icono": "💾",
+      "descripcion": "Copias de seguridad que permitan recuperar la información (RF-04)."
+    },
+    "Red": {
+      "critica": false,
+      "icono": "🌐",
+      "descripcion": "Firewall y separación de la red (RF-06). Se informa, pero no modifica el nivel general."
+    },
+    "Factor humano": {
+      "critica": false,
+      "icono": "👥",
+      "descripcion": "Capacitación del personal frente al phishing (RF-07). Se informa, pero no modifica el nivel general."
+    },
+    "Respuesta a incidentes": {
+      "critica": false,
+      "solo_observacion": true,
+      "icono": "🚨",
+      "descripcion": "Plan documentado ante incidentes (RF-08). Solo genera observaciones; no bloquea el nivel general."
+    }
+  },
+  "preguntas": [
+    {
+      "id": "antivirus_estado",
+      "categoria": "Endpoint",
+      "rf": "RF-01",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Estado del antivirus/EDR",
+      "texto": "¿En qué estado está el antivirus (o EDR) de los equipos de la empresa?",
+      "ayuda": "El antivirus detecta y bloquea programas maliciosos. Un EDR es un antivirus de nueva generación que además vigila comportamientos sospechosos. Considerá todas las PC, notebooks y el servidor.",
+      "opciones": [
+        {"valor": "actualizado", "texto": "Instalado, activo y actualizado en todos los equipos"},
+        {"valor": "sin_verificar", "texto": "Instalado en todos, pero nadie verifica si está actualizado"},
+        {"valor": "desactualizado", "texto": "Desactualizado en uno o más equipos"},
+        {"valor": "no_instalado", "texto": "No instalado en uno o más equipos"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "dias_actualizacion_so",
+      "categoria": "Endpoint",
+      "rf": "RF-05",
+      "clave": true,
+      "tipo": "numero",
+      "unidad": "días",
+      "max": 3650,
+      "etiqueta": "Días desde la última actualización del sistema operativo",
+      "texto": "¿Cuántos días pasaron desde la última actualización del sistema operativo en el equipo más atrasado?",
+      "ayuda": "El sistema operativo es Windows, macOS o Linux. Las actualizaciones (parches) corrigen fallas que los atacantes aprovechan. En Windows lo ves en Configuración → Windows Update → Historial de actualizaciones. Dejalo vacío si no sabés."
+    },
+    {
+      "id": "dias_actualizacion_apps",
+      "categoria": "Endpoint",
+      "rf": "RF-05",
+      "clave": true,
+      "tipo": "numero",
+      "unidad": "días",
+      "max": 3650,
+      "etiqueta": "Días desde la última actualización de aplicaciones críticas",
+      "texto": "¿Cuántos días pasaron desde la última actualización de las aplicaciones críticas (navegador, paquete de oficina, sistema de facturación)?",
+      "ayuda": "Las aplicaciones también tienen fallas de seguridad que se corrigen con actualizaciones. Tomá la más atrasada. Dejalo vacío si no sabés."
+    },
+    {
+      "id": "actualizaciones_automaticas",
+      "categoria": "Endpoint",
+      "rf": "RF-05",
+      "clave": false,
+      "tipo": "opcion",
+      "etiqueta": "Actualizaciones automáticas",
+      "texto": "¿Las actualizaciones se instalan automáticamente en los equipos?",
+      "ayuda": "Con las actualizaciones automáticas, los equipos se protegen solos sin depender de que alguien se acuerde.",
+      "opciones": [
+        {"valor": "si", "texto": "Sí, están activadas"},
+        {"valor": "no", "texto": "No, se hacen a mano (o no se hacen)"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "contrasenas_longitud",
+      "categoria": "Accesos",
+      "rf": "RF-02",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Política de longitud de contraseñas",
+      "texto": "¿Existe una regla que exija contraseñas largas (al menos 14 caracteres, u 8 si la cuenta usa autenticación en dos pasos)?",
+      "ayuda": "Una contraseña larga es mucho más difícil de adivinar que una corta con símbolos raros. Una buena práctica son las «frases de contraseña», por ejemplo: cafe-lunes-ventana-azul.",
+      "opciones": [
+        {"valor": "exigida", "texto": "Sí, y el sistema obliga a cumplirla"},
+        {"valor": "solo_recomendada", "texto": "Se recomienda, pero nadie lo controla"},
+        {"valor": "no_existe", "texto": "No existe ninguna regla"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "contrasenas_distintas",
+      "categoria": "Accesos",
+      "rf": "RF-02",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Contraseñas distintas por sistema",
+      "texto": "¿Las personas usan una contraseña distinta para cada sistema (correo, banco, facturación, etc.)?",
+      "ayuda": "Si una contraseña se filtra en un sitio, los atacantes la prueban en todos los demás. Un gestor de contraseñas es una aplicación que las genera y las recuerda por vos.",
+      "opciones": [
+        {"valor": "si", "texto": "Sí, siempre distintas (o usan un gestor de contraseñas)"},
+        {"valor": "algunos_repiten", "texto": "Algunas personas las repiten"},
+        {"valor": "mayoria_repite", "texto": "La mayoría repite contraseñas"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "mfa_correo",
+      "categoria": "Accesos",
+      "rf": "RF-03",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "MFA en el correo corporativo",
+      "texto": "¿El correo de la empresa tiene activada la autenticación en dos pasos (MFA)?",
+      "ayuda": "MFA (autenticación en dos pasos) pide, además de la contraseña, un código del celular o de una app. Aunque roben la contraseña, sin el celular no pueden entrar.",
+      "opciones": [
+        {"valor": "todos", "texto": "Sí, en todas las cuentas"},
+        {"valor": "algunos", "texto": "Solo en algunas cuentas"},
+        {"valor": "no", "texto": "No"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "mfa_criticos",
+      "categoria": "Accesos",
+      "rf": "RF-03",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "MFA en sistemas críticos",
+      "texto": "¿Y los demás sistemas críticos (banca online, sistema de facturación, acceso remoto, servicios en la nube) tienen MFA?",
+      "ayuda": "Un sistema es crítico si su robo o bloqueo detiene a la empresa o implica dinero: el home banking, la facturación, el acceso remoto a la oficina.",
+      "opciones": [
+        {"valor": "todos", "texto": "Sí, en todos"},
+        {"valor": "algunos", "texto": "En algunos"},
+        {"valor": "no", "texto": "En ninguno"},
+        {"valor": "no_aplica", "texto": "No usamos sistemas de este tipo"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "backup_frecuencia",
+      "categoria": "Continuidad",
+      "rf": "RF-04",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Frecuencia de backup",
+      "texto": "¿Cada cuánto se hace una copia de seguridad (backup) de la información importante?",
+      "ayuda": "Un backup es una copia de la información (facturas, clientes, contabilidad) para recuperarla si se borra, se rompe un equipo o un virus la secuestra (ransomware).",
+      "opciones": [
+        {"valor": "diaria", "texto": "Diaria"},
+        {"valor": "semanal", "texto": "Semanal"},
+        {"valor": "mensual", "texto": "Mensual"},
+        {"valor": "no_se_realiza", "texto": "No se realiza"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "backup_externo",
+      "categoria": "Continuidad",
+      "rf": "RF-04",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Copia fuera de la oficina / en la nube",
+      "texto": "¿Existe una copia guardada fuera de la oficina o en la nube?",
+      "ayuda": "Si la única copia está en la oficina, un incendio, un robo o un ransomware pueden destruir los datos y la copia al mismo tiempo.",
+      "mostrar_si": {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+      "opciones": [
+        {"valor": "nube", "texto": "Sí, en la nube"},
+        {"valor": "fuera_oficina", "texto": "Sí, en un disco que se guarda fuera de la oficina"},
+        {"valor": "no", "texto": "No, todas las copias quedan en la oficina"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "backup_probado",
+      "categoria": "Continuidad",
+      "rf": "RF-04",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Prueba de restauración del backup",
+      "texto": "¿Se probó alguna vez recuperar información desde el backup?",
+      "ayuda": "Probar el backup es restaurar algunos archivos para confirmar que la copia sirve. Muchas empresas descubren que su backup estaba incompleto recién cuando lo necesitan.",
+      "mostrar_si": {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+      "opciones": [
+        {"valor": "reciente", "texto": "Sí, en los últimos 3 meses"},
+        {"valor": "antiguo", "texto": "Sí, pero hace más de 3 meses"},
+        {"valor": "nunca", "texto": "Nunca se probó"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "backup_automatico",
+      "categoria": "Continuidad",
+      "rf": "RF-04",
+      "clave": false,
+      "tipo": "opcion",
+      "etiqueta": "Backup automático",
+      "texto": "¿El backup se hace automáticamente o depende de que alguien lo haga a mano?",
+      "ayuda": "Un backup manual depende de que una persona se acuerde y esté presente; si se enferma o se va de vacaciones, no hay copia.",
+      "mostrar_si": {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+      "opciones": [
+        {"valor": "automatico", "texto": "Automático"},
+        {"valor": "manual", "texto": "Manual"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "firewall",
+      "categoria": "Red",
+      "rf": "RF-06",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Firewall configurado",
+      "texto": "¿Existe un firewall configurado, además del router que entregó el proveedor de internet?",
+      "ayuda": "Un firewall es una barrera que filtra el tráfico de red no autorizado. Puede ser un equipo dedicado o el firewall de cada computadora (por ejemplo, el de Windows). El router del proveedor de internet (ISP) viene con una configuración básica que no alcanza.",
+      "opciones": [
+        {"valor": "si", "texto": "Sí, hay un firewall configurado (en la red o en cada equipo)"},
+        {"valor": "solo_router", "texto": "No, solo el router del proveedor de internet"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "router_clave",
+      "categoria": "Red",
+      "rf": "RF-06",
+      "clave": false,
+      "tipo": "opcion",
+      "etiqueta": "Contraseña de administración del router",
+      "texto": "¿Se cambió la contraseña de administración del router que vino de fábrica?",
+      "ayuda": "Los routers vienen con usuario y contraseña de fábrica que son públicos (figuran en internet). Si no se cambian, cualquiera conectado a la red puede modificar su configuración.",
+      "opciones": [
+        {"valor": "cambiada", "texto": "Sí, se cambió"},
+        {"valor": "de_fabrica", "texto": "No, sigue la de fábrica"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "wifi_invitados",
+      "categoria": "Red",
+      "rf": "RF-06",
+      "clave": false,
+      "tipo": "opcion",
+      "etiqueta": "Red Wi-Fi separada para visitantes",
+      "texto": "¿Los visitantes y los celulares personales usan una red Wi-Fi separada de la de los equipos de trabajo?",
+      "ayuda": "Separar la red (segmentación) evita que el celular infectado de un visitante pueda llegar, por ejemplo, al servidor de facturación.",
+      "opciones": [
+        {"valor": "separada", "texto": "Sí, hay una red de invitados separada"},
+        {"valor": "misma", "texto": "No, todos usan la misma red"},
+        {"valor": "no_hay", "texto": "No se ofrece Wi-Fi a visitantes"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "capacitacion_phishing",
+      "categoria": "Factor humano",
+      "rf": "RF-07",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Capacitación en phishing",
+      "texto": "¿Los empleados recibieron capacitación para reconocer correos y mensajes fraudulentos (phishing)?",
+      "ayuda": "Phishing es un engaño (por correo, WhatsApp o SMS) que se hace pasar por alguien confiable para robar contraseñas o lograr que se abra un archivo malicioso, como una falsa factura con un adjunto ejecutable.",
+      "opciones": [
+        {"valor": "ultimo_anio", "texto": "Sí, en los últimos 12 meses"},
+        {"valor": "mas_de_un_anio", "texto": "Sí, pero hace más de un año"},
+        {"valor": "nunca", "texto": "Nunca"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    },
+    {
+      "id": "incidentes_phishing",
+      "categoria": "Factor humano",
+      "rf": "RF-07",
+      "clave": false,
+      "tipo": "numero",
+      "unidad": "casos",
+      "max": 10000,
+      "etiqueta": "Intentos de phishing reportados (último año)",
+      "texto": "¿Cuántos intentos de phishing o correos sospechosos se reportaron en el último año?",
+      "ayuda": "Contá los casos que alguien avisó, aunque no hayan causado daño. Dejalo vacío si no sabés."
+    },
+    {
+      "id": "plan_incidentes",
+      "categoria": "Respuesta a incidentes",
+      "rf": "RF-08",
+      "clave": true,
+      "tipo": "opcion",
+      "etiqueta": "Plan de respuesta a incidentes",
+      "texto": "¿Existe un procedimiento documentado para actuar ante un incidente de seguridad (virus, cuenta robada, pérdida de datos)?",
+      "ayuda": "Un incidente es cualquier evento que afecta la seguridad: un virus, una cuenta robada, un equipo perdido. El plan dice quién decide, a quién llamar y qué hacer primero.",
+      "opciones": [
+        {"valor": "documentado", "texto": "Sí, está escrito y el equipo lo conoce"},
+        {"valor": "informal", "texto": "Hay una idea de qué hacer, pero no está escrito"},
+        {"valor": "no", "texto": "No"},
+        {"valor": "no_se", "texto": "No sé"}
+      ]
+    }
+  ],
+  "reglas": [
+    {
+      "id": "END-01", "rf": "RF-01", "categoria": "Endpoint",
+      "descripcion": "Equipos sin antivirus",
+      "si": {"hecho": "antivirus_estado", "op": "==", "valor": "no_instalado"},
+      "entonces": {"nivel": "Alto"}, "severidad": 10,
+      "recomendacion": "Instalar un antivirus/EDR en todos los equipos, incluido el servidor de facturación.",
+      "explicacion": "Un equipo sin antivirus no tiene defensa ante programas maliciosos, como el adjunto .exe recibido en marzo.",
+      "fuente": "CIS v8 10.1 (IG1) · ISO 27001 A.8.7 · NIST CSF PR.PS"
+    },
+    {
+      "id": "END-02", "rf": "RF-01", "categoria": "Endpoint",
+      "descripcion": "Antivirus desactualizado",
+      "si": {"hecho": "antivirus_estado", "op": "==", "valor": "desactualizado"},
+      "entonces": {"nivel": "Alto"}, "severidad": 9,
+      "recomendacion": "Activar la actualización automática de firmas del antivirus y corregir los equipos desactualizados.",
+      "explicacion": "Un antivirus desactualizado no reconoce las amenazas nuevas.",
+      "fuente": "CIS v8 10.2 (IG1) · ISO 27001 A.8.7"
+    },
+    {
+      "id": "END-03", "rf": "RF-01", "categoria": "Endpoint",
+      "descripcion": "Antivirus sin verificación de estado",
+      "si": {"hecho": "antivirus_estado", "op": "==", "valor": "sin_verificar"},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Designar un responsable que verifique mensualmente (o desde una consola central) que el antivirus esté activo y actualizado en cada equipo.",
+      "explicacion": "Si nadie verifica el antivirus, puede estar vencido o desactivado sin que se note.",
+      "fuente": "CIS v8 10.2 (IG1) · ISO 27001 A.8.7"
+    },
+    {
+      "id": "END-04", "rf": "RF-01", "categoria": "Endpoint",
+      "descripcion": "Antivirus en regla (cumple)",
+      "si": {"hecho": "antivirus_estado", "op": "==", "valor": "actualizado"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "El control de antimalware cumple con la salvaguarda básica.",
+      "fuente": "CIS v8 10.1 / 10.2 (IG1)"
+    },
+    {
+      "id": "END-05", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Sistema operativo muy desactualizado (> 180 días)",
+      "si": {"hecho": "dias_actualizacion_so", "op": ">", "valor": 180},
+      "entonces": {"nivel": "Alto"}, "severidad": 9,
+      "recomendacion": "Actualizar de inmediato el sistema operativo de todos los equipos y activar las actualizaciones automáticas.",
+      "explicacion": "Con más de seis meses sin parches, el equipo acumula fallas públicamente conocidas y explotadas.",
+      "fuente": "CIS v8 7.3 (IG1) · ISO 27001 A.8.8 · NIST CSF PR.PS-02"
+    },
+    {
+      "id": "END-06", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Sistema operativo desactualizado (91 a 180 días)",
+      "si": {"todos": [
+        {"hecho": "dias_actualizacion_so", "op": ">", "valor": 90},
+        {"hecho": "dias_actualizacion_so", "op": "<=", "valor": 180}
+      ]},
+      "entonces": {"nivel": "Medio"}, "severidad": 7,
+      "recomendacion": "Actualizar el sistema operativo de los equipos atrasados y fijar un ciclo mensual de actualizaciones.",
+      "explicacion": "El pliego fija 90 días como umbral de riesgo para software desactualizado.",
+      "fuente": "CIS v8 7.3 (IG1) · ISO 27001 A.8.8"
+    },
+    {
+      "id": "END-07", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Sistema operativo con ciclo de actualización mayor al mensual (31 a 90 días)",
+      "si": {"todos": [
+        {"hecho": "dias_actualizacion_so", "op": ">", "valor": 30},
+        {"hecho": "dias_actualizacion_so", "op": "<=", "valor": 90}
+      ]},
+      "entonces": {"nivel": "Bajo"}, "severidad": 3,
+      "recomendacion": "Llevar las actualizaciones del sistema operativo a un ciclo mensual o automático.",
+      "explicacion": "Está dentro del umbral del pliego, pero CIS recomienda aplicar parches al menos mensualmente.",
+      "fuente": "CIS v8 7.3 (IG1)"
+    },
+    {
+      "id": "END-08", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Sistema operativo al día (cumple)",
+      "si": {"hecho": "dias_actualizacion_so", "op": "<=", "valor": 30},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "El sistema operativo se actualizó en el último mes.",
+      "fuente": "CIS v8 7.3 (IG1)"
+    },
+    {
+      "id": "END-09", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Aplicaciones críticas muy desactualizadas (> 180 días)",
+      "si": {"hecho": "dias_actualizacion_apps", "op": ">", "valor": 180},
+      "entonces": {"nivel": "Alto"}, "severidad": 8,
+      "recomendacion": "Actualizar navegador, paquete de oficina y sistema de facturación; activar sus actualizaciones automáticas.",
+      "explicacion": "Las aplicaciones con más de seis meses sin parches son una vía de entrada frecuente.",
+      "fuente": "CIS v8 7.4 (IG1) · ISO 27001 A.8.8 · NIST CSF PR.PS-02"
+    },
+    {
+      "id": "END-10", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Aplicaciones críticas desactualizadas (91 a 180 días)",
+      "si": {"todos": [
+        {"hecho": "dias_actualizacion_apps", "op": ">", "valor": 90},
+        {"hecho": "dias_actualizacion_apps", "op": "<=", "valor": 180}
+      ]},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Actualizar las aplicaciones críticas atrasadas y revisarlas una vez por mes.",
+      "explicacion": "El pliego fija 90 días como umbral de riesgo para software desactualizado.",
+      "fuente": "CIS v8 7.4 (IG1) · ISO 27001 A.8.8"
+    },
+    {
+      "id": "END-11", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Aplicaciones con ciclo de actualización mayor al mensual (31 a 90 días)",
+      "si": {"todos": [
+        {"hecho": "dias_actualizacion_apps", "op": ">", "valor": 30},
+        {"hecho": "dias_actualizacion_apps", "op": "<=", "valor": 90}
+      ]},
+      "entonces": {"nivel": "Bajo"}, "severidad": 2,
+      "recomendacion": "Llevar la actualización de aplicaciones críticas a un ciclo mensual o automático.",
+      "explicacion": "Está dentro del umbral del pliego, pero CIS recomienda aplicar parches al menos mensualmente.",
+      "fuente": "CIS v8 7.4 (IG1)"
+    },
+    {
+      "id": "END-12", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Aplicaciones críticas al día (cumple)",
+      "si": {"hecho": "dias_actualizacion_apps", "op": "<=", "valor": 30},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "Las aplicaciones críticas se actualizaron en el último mes.",
+      "fuente": "CIS v8 7.4 (IG1)"
+    },
+    {
+      "id": "END-13", "rf": "RF-05", "categoria": "Endpoint",
+      "descripcion": "Sin actualizaciones automáticas",
+      "si": {"hecho": "actualizaciones_automaticas", "op": "==", "valor": "no"},
+      "entonces": {"nivel": "Medio"}, "severidad": 5,
+      "recomendacion": "Activar las actualizaciones automáticas del sistema operativo y de las aplicaciones.",
+      "explicacion": "Las actualizaciones manuales dependen de que alguien se acuerde; suelen atrasarse.",
+      "fuente": "CIS v8 7.3 / 7.4 (IG1)"
+    },
+    {
+      "id": "ACC-01", "rf": "RF-02", "categoria": "Accesos",
+      "descripcion": "Sin política de longitud mínima de contraseñas",
+      "si": {"hecho": "contrasenas_longitud", "op": "==", "valor": "no_existe"},
+      "entonces": {"nivel": "Alto"}, "severidad": 9,
+      "recomendacion": "Definir y aplicar una política de contraseñas: mínimo 14 caracteres (u 8 si la cuenta tiene MFA), preferentemente frases de contraseña.",
+      "explicacion": "Sin longitud mínima, las contraseñas cortas se adivinan por fuerza bruta en minutos.",
+      "fuente": "CIS v8 5.2 (IG1) · ISO 27001 A.5.17"
+    },
+    {
+      "id": "ACC-02", "rf": "RF-02", "categoria": "Accesos",
+      "descripcion": "Política de contraseñas no exigida",
+      "si": {"hecho": "contrasenas_longitud", "op": "==", "valor": "solo_recomendada"},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Configurar el sistema (Microsoft 365, Google Workspace, Windows) para que exija la longitud mínima en lugar de solo recomendarla.",
+      "explicacion": "Una política que no se controla técnicamente suele no cumplirse.",
+      "fuente": "CIS v8 5.2 (IG1) · ISO 27001 A.5.17"
+    },
+    {
+      "id": "ACC-03", "rf": "RF-02", "categoria": "Accesos",
+      "descripcion": "Política de contraseñas exigida (cumple)",
+      "si": {"hecho": "contrasenas_longitud", "op": "==", "valor": "exigida"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "La longitud mínima está exigida por el sistema.",
+      "fuente": "CIS v8 5.2 (IG1)"
+    },
+    {
+      "id": "ACC-04", "rf": "RF-02", "categoria": "Accesos",
+      "descripcion": "Reutilización generalizada de contraseñas",
+      "si": {"hecho": "contrasenas_distintas", "op": "==", "valor": "mayoria_repite"},
+      "entonces": {"nivel": "Alto"}, "severidad": 9,
+      "recomendacion": "Adoptar un gestor de contraseñas y cambiar las contraseñas reutilizadas, empezando por el correo y la banca online.",
+      "explicacion": "Con contraseñas repetidas, una sola filtración abre todos los sistemas de esa persona.",
+      "fuente": "CIS v8 5.2 (IG1) · ISO 27001 A.5.17 · NIST CSF PR.AA"
+    },
+    {
+      "id": "ACC-05", "rf": "RF-02", "categoria": "Accesos",
+      "descripcion": "Reutilización parcial de contraseñas",
+      "si": {"hecho": "contrasenas_distintas", "op": "==", "valor": "algunos_repiten"},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Identificar a quienes repiten contraseñas y darles un gestor de contraseñas.",
+      "explicacion": "Cada persona que repite contraseñas es una puerta de entrada.",
+      "fuente": "CIS v8 5.2 (IG1) · ISO 27001 A.5.17"
+    },
+    {
+      "id": "ACC-06", "rf": "RF-02", "categoria": "Accesos",
+      "descripcion": "Contraseñas únicas por sistema (cumple)",
+      "si": {"hecho": "contrasenas_distintas", "op": "==", "valor": "si"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "Las contraseñas son únicas por sistema.",
+      "fuente": "CIS v8 5.2 (IG1)"
+    },
+    {
+      "id": "ACC-07", "rf": "RF-03", "categoria": "Accesos",
+      "descripcion": "Correo corporativo sin MFA",
+      "si": {"hecho": "mfa_correo", "op": "==", "valor": "no"},
+      "entonces": {"nivel": "Alto"}, "severidad": 10,
+      "recomendacion": "Activar la autenticación en dos pasos (MFA) en todas las cuentas de correo corporativo.",
+      "explicacion": "El correo es la llave para recuperar todas las demás cuentas; sin MFA, una contraseña robada alcanza para tomarlo.",
+      "fuente": "CIS v8 6.3 (IG1) · ISO 27001 A.8.5 · NIST CSF PR.AA-03"
+    },
+    {
+      "id": "ACC-08", "rf": "RF-03", "categoria": "Accesos",
+      "descripcion": "MFA parcial en el correo",
+      "si": {"hecho": "mfa_correo", "op": "==", "valor": "algunos"},
+      "entonces": {"nivel": "Medio"}, "severidad": 8,
+      "recomendacion": "Extender la autenticación en dos pasos (MFA) a todas las cuentas de correo, sin excepciones.",
+      "explicacion": "Los atacantes buscan justamente las cuentas que quedaron sin MFA.",
+      "fuente": "CIS v8 6.3 (IG1) · ISO 27001 A.8.5"
+    },
+    {
+      "id": "ACC-09", "rf": "RF-03", "categoria": "Accesos",
+      "descripcion": "MFA en todo el correo (cumple)",
+      "si": {"hecho": "mfa_correo", "op": "==", "valor": "todos"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "Todas las cuentas de correo tienen MFA.",
+      "fuente": "CIS v8 6.3 (IG1)"
+    },
+    {
+      "id": "ACC-10", "rf": "RF-03", "categoria": "Accesos",
+      "descripcion": "Sistemas críticos sin MFA",
+      "si": {"hecho": "mfa_criticos", "op": "==", "valor": "no"},
+      "entonces": {"nivel": "Alto"}, "severidad": 9,
+      "recomendacion": "Activar MFA en los sistemas críticos: banca online, sistema de facturación, acceso remoto y paneles de administración.",
+      "explicacion": "Son los accesos que implican dinero o paralización del negocio.",
+      "fuente": "CIS v8 6.3 / 6.4 / 6.5 (IG1) · ISO 27001 A.8.5"
+    },
+    {
+      "id": "ACC-11", "rf": "RF-03", "categoria": "Accesos",
+      "descripcion": "MFA parcial en sistemas críticos",
+      "si": {"hecho": "mfa_criticos", "op": "==", "valor": "algunos"},
+      "entonces": {"nivel": "Medio"}, "severidad": 7,
+      "recomendacion": "Completar la activación de MFA en los sistemas críticos que aún no lo tienen.",
+      "explicacion": "Un solo sistema crítico sin MFA alcanza para un fraude.",
+      "fuente": "CIS v8 6.3 / 6.4 / 6.5 (IG1)"
+    },
+    {
+      "id": "ACC-12", "rf": "RF-03", "categoria": "Accesos",
+      "descripcion": "MFA en sistemas críticos (cumple o no aplica)",
+      "si": {"hecho": "mfa_criticos", "op": "en", "valor": ["todos", "no_aplica"]},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "Los sistemas críticos tienen MFA o la empresa no los utiliza.",
+      "fuente": "CIS v8 6.3 (IG1)"
+    },
+    {
+      "id": "CON-01", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "No se realizan backups",
+      "si": {"hecho": "backup_frecuencia", "op": "==", "valor": "no_se_realiza"},
+      "entonces": {"nivel": "Alto"}, "severidad": 10,
+      "recomendacion": "Implementar backups automáticos, al menos semanales, de los datos críticos (empezando por el servidor de facturación).",
+      "explicacion": "Sin backup, un ransomware o una falla de disco significa perder la información para siempre.",
+      "fuente": "CIS v8 11.1 / 11.2 (IG1) · ISO 27001 A.8.13 · NIST CSF PR.DS-11"
+    },
+    {
+      "id": "CON-02", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "Backup sin copia externa",
+      "si": {"todos": [
+        {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+        {"hecho": "backup_externo", "op": "==", "valor": "no"}
+      ]},
+      "entonces": {"nivel": "Alto"}, "severidad": 9,
+      "recomendacion": "Activar backup con copia externa: mantener al menos una copia en la nube o fuera de la oficina, desconectada de la red (regla 3-2-1).",
+      "explicacion": "Un ransomware, un robo o un incendio pueden destruir los datos y la copia local al mismo tiempo.",
+      "fuente": "CIS v8 11.3 / 11.4 (IG1) · ISO 27001 A.8.13 · NIST CSF PR.DS-11"
+    },
+    {
+      "id": "CON-03", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "Backup nunca probado",
+      "si": {"todos": [
+        {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+        {"hecho": "backup_probado", "op": "==", "valor": "nunca"}
+      ]},
+      "entonces": {"nivel": "Alto"}, "severidad": 8,
+      "recomendacion": "Hacer una prueba de restauración: recuperar algunos archivos y la base de facturación desde el backup y verificar que estén completos.",
+      "explicacion": "Un backup que nunca se probó puede no servir; el pliego lo trata como riesgo alto.",
+      "fuente": "Pliego RF-04 · NIST CSF PR.DS-11 · CIS v8 11.5 (IG2)"
+    },
+    {
+      "id": "CON-04", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "Prueba de restauración antigua",
+      "si": {"todos": [
+        {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+        {"hecho": "backup_probado", "op": "==", "valor": "antiguo"}
+      ]},
+      "entonces": {"nivel": "Medio"}, "severidad": 5,
+      "recomendacion": "Probar la restauración del backup al menos una vez por trimestre.",
+      "explicacion": "Los cambios en los sistemas pueden dejar fuera del backup información nueva.",
+      "fuente": "NIST CSF PR.DS-11 · CIS v8 11.5 (IG2)"
+    },
+    {
+      "id": "CON-05", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "Backup solo mensual",
+      "si": {"hecho": "backup_frecuencia", "op": "==", "valor": "mensual"},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Aumentar la frecuencia del backup a semanal o, idealmente, diaria.",
+      "explicacion": "Con backup mensual se puede perder hasta un mes de trabajo.",
+      "fuente": "CIS v8 11.2 (IG1) · ISO 27001 A.8.13"
+    },
+    {
+      "id": "CON-06", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "Backup manual",
+      "si": {"todos": [
+        {"hecho": "backup_frecuencia", "op": "!=", "valor": "no_se_realiza"},
+        {"hecho": "backup_automatico", "op": "==", "valor": "manual"}
+      ]},
+      "entonces": {"nivel": "Medio"}, "severidad": 5,
+      "recomendacion": "Automatizar el backup para que no dependa de una sola persona.",
+      "explicacion": "Si la persona que hace el backup no está, no hay copia.",
+      "fuente": "CIS v8 11.2 (IG1)"
+    },
+    {
+      "id": "CON-07", "rf": "RF-04", "categoria": "Continuidad",
+      "descripcion": "Backup frecuente, externo y probado (cumple)",
+      "si": {"todos": [
+        {"hecho": "backup_frecuencia", "op": "en", "valor": ["diaria", "semanal"]},
+        {"hecho": "backup_externo", "op": "en", "valor": ["nube", "fuera_oficina"]},
+        {"hecho": "backup_probado", "op": "==", "valor": "reciente"}
+      ]},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "El backup es frecuente, tiene copia externa y se probó recientemente.",
+      "fuente": "CIS v8 11.2 / 11.4 (IG1)"
+    },
+    {
+      "id": "RED-01", "rf": "RF-06", "categoria": "Red",
+      "descripcion": "Sin firewall configurado",
+      "si": {"hecho": "firewall", "op": "==", "valor": "solo_router"},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Activar y configurar el firewall de cada equipo y del servidor, y evaluar un firewall perimetral propio.",
+      "explicacion": "El router del proveedor de internet no filtra el tráfico según las necesidades de la empresa.",
+      "fuente": "CIS v8 4.4 / 4.5 (IG1) · ISO 27001 A.8.20 · NIST CSF PR.IR-01"
+    },
+    {
+      "id": "RED-02", "rf": "RF-06", "categoria": "Red",
+      "descripcion": "Firewall configurado (cumple)",
+      "si": {"hecho": "firewall", "op": "==", "valor": "si"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "Existe un firewall configurado además del router.",
+      "fuente": "CIS v8 4.4 / 4.5 (IG1)"
+    },
+    {
+      "id": "RED-03", "rf": "RF-06", "categoria": "Red",
+      "descripcion": "Router con contraseña de fábrica",
+      "si": {"hecho": "router_clave", "op": "==", "valor": "de_fabrica"},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Cambiar la contraseña de administración del router y actualizar su firmware.",
+      "explicacion": "Las credenciales de fábrica son públicas.",
+      "fuente": "CIS v8 4.7 / 12.1 (IG1) · ISO 27001 A.8.20"
+    },
+    {
+      "id": "RED-04", "rf": "RF-06", "categoria": "Red",
+      "descripcion": "Visitantes en la misma red que los equipos de trabajo",
+      "si": {"hecho": "wifi_invitados", "op": "==", "valor": "misma"},
+      "entonces": {"nivel": "Medio"}, "severidad": 4,
+      "recomendacion": "Crear una red Wi-Fi de invitados separada de la red de trabajo y del servidor.",
+      "explicacion": "Sin segmentación, cualquier dispositivo conectado puede llegar a los equipos internos.",
+      "fuente": "ISO 27001 A.8.22 · NIST CSF PR.IR-01 · CIS v8 12.2 (IG2)"
+    },
+    {
+      "id": "FH-01", "rf": "RF-07", "categoria": "Factor humano",
+      "descripcion": "Sin capacitación en phishing en el último año",
+      "si": {"hecho": "capacitacion_phishing", "op": "en", "valor": ["mas_de_un_anio", "nunca"]},
+      "entonces": {"nivel": "Medio"}, "severidad": 6,
+      "recomendacion": "Realizar una capacitación breve y anual sobre phishing, con ejemplos reales y un canal claro para reportar mensajes sospechosos.",
+      "explicacion": "La mayoría de los ataques a PyMEs empieza con un engaño a una persona.",
+      "fuente": "CIS v8 14.1 / 14.2 (IG1) · ISO 27001 A.6.3 · NIST CSF PR.AT-01"
+    },
+    {
+      "id": "FH-02", "rf": "RF-07", "categoria": "Factor humano",
+      "descripcion": "Intentos de phishing reales sin capacitación vigente",
+      "si": {"todos": [
+        {"hecho": "capacitacion_phishing", "op": "en", "valor": ["mas_de_un_anio", "nunca"]},
+        {"hecho": "incidentes_phishing", "op": ">=", "valor": 1}
+      ]},
+      "entonces": {"nivel": "Medio"}, "severidad": 8,
+      "recomendacion": "Priorizar la capacitación en phishing: la empresa ya recibió intentos reales y volverá a recibirlos.",
+      "explicacion": "Haber recibido ataques indica que la empresa ya es objetivo.",
+      "fuente": "CIS v8 14.2 (IG1) · NIST CSF PR.AT-01"
+    },
+    {
+      "id": "FH-03", "rf": "RF-07", "categoria": "Factor humano",
+      "descripcion": "Capacitación vigente (cumple)",
+      "si": {"hecho": "capacitacion_phishing", "op": "==", "valor": "ultimo_anio"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "El personal fue capacitado en los últimos 12 meses.",
+      "fuente": "CIS v8 14.1 (IG1)"
+    },
+    {
+      "id": "FH-04", "rf": "RF-07", "categoria": "Factor humano",
+      "descripcion": "Ningún intento de phishing reportado",
+      "si": {"hecho": "incidentes_phishing", "op": "==", "valor": 0},
+      "entonces": {"nivel": "Observación"}, "severidad": 3,
+      "recomendacion": "Verificar que todo el personal sepa cómo y a quién reportar un mensaje sospechoso: que no haya reportes no significa que no haya intentos.",
+      "explicacion": "Casi todas las empresas reciben intentos de phishing; cero reportes suele indicar que no se reportan.",
+      "fuente": "CIS v8 14.6 / 17.3 (IG1)"
+    },
+    {
+      "id": "INC-01", "rf": "RF-08", "categoria": "Respuesta a incidentes",
+      "descripcion": "Sin plan de respuesta a incidentes",
+      "si": {"hecho": "plan_incidentes", "op": "==", "valor": "no"},
+      "entonces": {"nivel": "Observación"}, "severidad": 5,
+      "recomendacion": "Documentar un procedimiento de una página: quién decide, a quién llamar (proveedor de IT, banco, aseguradora), cómo aislar un equipo y cómo restaurar desde el backup.",
+      "explicacion": "Ante un incidente, las primeras horas son decisivas; improvisar aumenta el daño.",
+      "fuente": "CIS v8 17.1 / 17.2 / 17.3 (IG1) · ISO 27001 A.5.24 · NIST CSF ID.IM-04"
+    },
+    {
+      "id": "INC-02", "rf": "RF-08", "categoria": "Respuesta a incidentes",
+      "descripcion": "Plan de respuesta informal",
+      "si": {"hecho": "plan_incidentes", "op": "==", "valor": "informal"},
+      "entonces": {"nivel": "Observación"}, "severidad": 3,
+      "recomendacion": "Pasar a escrito lo que hoy se sabe de palabra y compartirlo con todo el equipo.",
+      "explicacion": "Un plan que solo existe en la cabeza de una persona no sirve si esa persona no está.",
+      "fuente": "CIS v8 17.1 / 17.3 (IG1) · ISO 27001 A.5.24"
+    },
+    {
+      "id": "INC-03", "rf": "RF-08", "categoria": "Respuesta a incidentes",
+      "descripcion": "Plan documentado (cumple)",
+      "si": {"hecho": "plan_incidentes", "op": "==", "valor": "documentado"},
+      "entonces": {"nivel": "Bajo"}, "severidad": 0,
+      "explicacion": "Existe un procedimiento escrito y conocido.",
+      "fuente": "CIS v8 17.1 (IG1)"
+    }
+  ],
+  "glosario": [
+    {"termino": "Antivirus", "definicion": "Programa que detecta y bloquea software malicioso en un equipo."},
+    {"termino": "EDR", "definicion": "Antivirus de próxima generación: además de bloquear virus conocidos, vigila comportamientos sospechosos y permite responder desde una consola central."},
+    {"termino": "Endpoint", "definicion": "Dispositivo final conectado a la red (PC, notebook, celular, servidor)."},
+    {"termino": "Parche / actualización", "definicion": "Corrección que publica el fabricante para cerrar una falla de seguridad."},
+    {"termino": "MFA", "definicion": "Autenticación en dos pasos: además de la contraseña, se pide un código del celular o una app."},
+    {"termino": "Gestor de contraseñas", "definicion": "Aplicación que genera y guarda contraseñas distintas y largas para cada sitio."},
+    {"termino": "Frase de contraseña", "definicion": "Contraseña formada por varias palabras (ej.: cafe-lunes-ventana-azul): larga, fácil de recordar y difícil de adivinar."},
+    {"termino": "Backup", "definicion": "Copia de seguridad de la información para poder recuperarla."},
+    {"termino": "Regla 3-2-1", "definicion": "Tener 3 copias de los datos, en 2 tipos de soporte distintos, con 1 copia fuera de la oficina."},
+    {"termino": "Ransomware", "definicion": "Virus que cifra (bloquea) los archivos y pide un rescate para devolverlos."},
+    {"termino": "Firewall", "definicion": "Barrera que filtra el tráfico de red no autorizado."},
+    {"termino": "ISP", "definicion": "Proveedor de servicio de internet (la empresa que da la conexión y suele entregar el router)."},
+    {"termino": "Segmentación de red", "definicion": "División de la red en partes aisladas para limitar el impacto de un incidente."},
+    {"termino": "Phishing", "definicion": "Engaño para obtener datos o accesos mediante suplantación (correo, SMS, WhatsApp)."},
+    {"termino": "Incidente de seguridad", "definicion": "Evento que afecta la confidencialidad, integridad o disponibilidad de la información."},
+    {"termino": "Framework de seguridad", "definicion": "Conjunto estructurado de buenas prácticas de referencia."},
+    {"termino": "CIS Controls v8 / IG1", "definicion": "Lista de controles de seguridad priorizados del Center for Internet Security. IG1 (Implementation Group 1) es el conjunto mínimo pensado para organizaciones chicas."},
+    {"termino": "NIST CSF", "definicion": "Marco de ciberseguridad del NIST (EE. UU.) que organiza la seguridad en funciones como Identificar y Proteger."},
+    {"termino": "ISO/IEC 27001", "definicion": "Norma internacional de gestión de la seguridad de la información; su Anexo A lista controles concretos."}
+  ]
+}
